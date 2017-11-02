@@ -1,4 +1,4 @@
-# Music-chat
+# Music-chatbot
 Project subject NLP
 ### Requirement
 python3 package: flask, gensim, numpy, tensorflow >= 1.2  
