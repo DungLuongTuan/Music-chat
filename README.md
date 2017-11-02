@@ -9,5 +9,5 @@ run `python3 run.py`
 run `python3 app/terminal.py` to teach bot  
 run `python3 training_code/end-to-end_language_generator/seq2seq_ver2.py` to train new model
 ### mongodb
-db name = projectNLP
+db name = projectNLP  
 collection name = songCollection
