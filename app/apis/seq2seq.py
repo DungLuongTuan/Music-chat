@@ -9,8 +9,8 @@ class Seq2Seq(object):
 		self.sess = sess
 		### fixed parameters
 		self.max_step = 20
-		self.n_hidden = 50
-		self.embedding_size = 50
+		self.n_hidden = 100
+		self.embedding_size = 100
 		### load model when initialized
 		self.build_model()
 		self.saver = tf.train.Saver()
@@ -106,7 +106,7 @@ class Seq2Seq(object):
 		punctuation = ['.', ',', '!', '?']
 		sentence = ''
 		for i in range(len(text)):
-			if (text[i] in punctuation):
+			if (text[i] in punctuation) and (i > 0) and (text[i-1] != ' '):
 				sentence += ' '
 			sentence += text[i]
 		return sentence

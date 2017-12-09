@@ -2,17 +2,15 @@ import os
 import numpy as np 
 import tensorflow as tf 
 import gensim
-from flask import render_template, request
-from app import app
 from pymongo import MongoClient
-from .apis.seq2seq import Seq2Seq
-from .apis.entity_detector.song_detector_LM import SongDetectorLM
-from .apis.entity_detector.singer_composer_detector import SingerComposerDetector
-from .apis.entity_detector.type_detector import TypeDetector 
-from .apis.entity_detector.property_detector import PropertyDetector 
-from .apis.music_checker import MusicChecker
-from .apis.intent_detector import IntentDetector
-from .apis.dialog_manager import DialogManager
+from app.apis.seq2seq import Seq2Seq
+from app.apis.entity_detector.song_detector_LM import SongDetectorLM
+from app.apis.entity_detector.singer_composer_detector import SingerComposerDetector
+from app.apis.entity_detector.type_detector import TypeDetector 
+from app.apis.entity_detector.property_detector import PropertyDetector 
+from app.apis.music_checker import MusicChecker
+from app.apis.intent_detector import IntentDetector
+from app.apis.dialog_manager import DialogManager
 
 
 ######========================================================================================######
@@ -26,6 +24,7 @@ song_collection = db.songCollection
 artist_collection = db.artistCollection
 
 #================================ load pretrain model ========================================
+tf.reset_default_graph()
 Doc2vec = gensim.models.doc2vec.Doc2Vec.load('./model/doc2vec/best.doc2vec.model')
 sess = tf.InteractiveSession()
 seq2seq = Seq2Seq(sess)
@@ -44,6 +43,14 @@ dialog_manager = DialogManager()
 req = ''
 dialog_history = {'songs' : None, 'names' : None, 'types' : None, 'properties' : None}
 
+def normalize(text):
+	text_ = ''
+	for i in range(len(text)):
+		if (text[i] in ['?', ',', '.', '!']):
+			text_ += ' '
+		text_ += text[i]
+	return text_
+
 def get_response(req):
 	# get input sentence of user
 	response = {'text' : '', 'link' : ''}
@@ -54,7 +61,7 @@ def get_response(req):
 	if (isMusic):
 		### process music domain ###
 		# replace all specific NP by general words
-		text = req
+		text = normalize(req)
 		text, song = song_detector.detect(text)
 		text, names = singer_composer_detector.detect(text)
 		text, types = type_detector.detect(text)
@@ -78,16 +85,9 @@ def get_response(req):
 	#response
 	return response
 
-#================================== SERVER ==================================================
-@app.route('/')
-def index():
-	return render_template('index.html')
+req = ''
 
-@app.route('/', methods = ['POST'])
-def get_request():
-	global dialog_history
-	text = dict(request.form)['req'][0]
-	res = get_response(text)
-	res['link'] = res['link'].replace('https://www.youtube.com/watch?v=', '')
-	
-	return str(res).replace("'", '"', 1000)
+while (req != 'stop'):
+	req = input('user: ')
+	res = get_response(req)
+	print('bot: ', res)

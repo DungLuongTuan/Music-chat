@@ -25,6 +25,11 @@ class MusicChecker(object):
 		for row in f:
 			self.music_words.append(row[:-1])
 		f.close()
+		### append lyric's word
+		f = open('./data/dictionary/entity_dictionary/lyric_dictionary', 'r')
+		for row in f:
+			self.music_words.append(row[:-1])
+		f.close()
 		### append type's word
 		f = open('./data/dictionary/entity_dictionary/type_dictionary', 'r')
 		for row in f:
@@ -36,6 +41,10 @@ class MusicChecker(object):
 		for row in f:
 			self.music_words.append(row[:-1])
 		f.close()
+		### append other's words
+		f = open('./data/dictionary/entity_dictionary/other_dictionary', 'r')
+		for row in f:
+			self.music_words.append(row[:-1])
 
 	def check(self, text):
 		ok = False

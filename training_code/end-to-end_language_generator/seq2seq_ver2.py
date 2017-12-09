@@ -3,6 +3,15 @@ import numpy as np
 import tensorflow as tf 
 from tensorflow.python.layers.core import Dense 
 
+def whitespace(text):
+	punctuation = ['.', ',', '!', '?']
+	sentence = ''
+	for i in range(len(text)):
+		if (text[i] in punctuation) and (i > 0) and (text[i-1] != ' '):
+			sentence += ' '
+		sentence += text[i]
+	return sentence
+
 def make_dictionary():
 	### make dictionary form dialog source
 	f = open('../../data/NLG/dialog.csv', 'r')
@@ -10,8 +19,8 @@ def make_dictionary():
 	next(f)
 	for row in f:
 		split_row = row[:-1].split('\t')
-		split_req = split_row[1].split(' ')
-		split_res = split_row[2].split(' ')
+		split_req = whitespace(split_row[1]).split(' ')
+		split_res = whitespace(split_row[2]).split(' ')
 		dictionary += split_req
 		dictionary += split_res
 	dictionary = set(dictionary)
@@ -42,7 +51,7 @@ def load_data(max_step):
 		split_row = row[:-1].split('\t')
 		# make encoder input
 		enc_input = []
-		enc_input_split = split_row[1].split(' ')
+		enc_input_split = whitespace(split_row[1]).split(' ')
 		for word in enc_input_split:
 			enc_input.append(dictionary.index(word))
 		while (len(enc_input) < max_step):
@@ -53,7 +62,7 @@ def load_data(max_step):
 		enc_inputs_length.append(len(enc_input_split))
 		# make decoder input
 		dec_input = []
-		dec_input_split = split_row[2].split(' ')
+		dec_input_split = whitespace(split_row[2]).split(' ')
 		for word in dec_input_split:
 			dec_input.append(dictionary.index(word))
 		while (len(dec_input) < max_step):
@@ -68,13 +77,13 @@ def load_data(max_step):
 def main():
 	### make dictionary
 	dictionary = make_dictionary()
-
+	tf.reset_default_graph()
 	### parameters
-	epochs = 15
+	epochs = 50
 	batch_size = 4
 	max_step = 20
-	n_hidden = 50
-	embedding_size = 50
+	n_hidden = 100
+	embedding_size = 100
 	start_token = dictionary.index('<GO>')
 	end_token = dictionary.index('<EOS>')
 
@@ -166,7 +175,7 @@ def main():
 	# loss function
 	loss = tf.contrib.seq2seq.sequence_loss(logits = decoder_logits_train, targets = decoder_target_train, weights = mask)
 	# optimization algorithm
-	optimizer = tf.train.AdamOptimizer(0.01).minimize(loss)
+	optimizer = tf.train.AdamOptimizer(0.001).minimize(loss)
 
 	# training...
 	sess = tf.InteractiveSession()
@@ -187,19 +196,20 @@ def main():
 		print('epoch: ', epoch, ' loss: ', sum_loss)
 	saver.save(sess, '../../model/end-to-end_language_generator/model.ckpt')
 
-	# # evaluate
-	for i in range(len(enc_inputs_length)):
-		pred = sess.run(predict, feed_dict = {encoder_inputs: np.array([enc_inputs[i]]), encoder_inputs_length: np.array([enc_inputs_length[i]])})
-		# input sentence
-		input_sentence = ''
-		for j in range(enc_inputs_length[i]):
-			input_sentence += ' ' + dictionary[enc_inputs[i][j]]
-		# predict output sentence
-		output_sentence = ''
-		for j in range(len(pred[0])):
-			output_sentence += ' ' + dictionary[np.argmax(pred[0][j])]
-		# print pair of sentence
-		print(input_sentence, ' => ', output_sentence)
+
+	# ### evaluate
+	# for i in range(len(enc_inputs_length)):
+	# 	pred = sess.run(predict, feed_dict = {encoder_inputs: np.array([enc_inputs[i]]), encoder_inputs_length: np.array([enc_inputs_length[i]])})
+	# 	# input sentence
+	# 	input_sentence = ''
+	# 	for j in range(enc_inputs_length[i]):
+	# 		input_sentence += ' ' + dictionary[enc_inputs[i][j]]
+	# 	# predict output sentence
+	# 	output_sentence = ''
+	# 	for j in range(len(pred[0])):
+	# 		output_sentence += ' ' + dictionary[np.argmax(pred[0][j])]
+	# 	# print pair of sentence
+	# 	print(input_sentence, ' => ', output_sentence)
 
 if __name__ == '__main__':
 	main()

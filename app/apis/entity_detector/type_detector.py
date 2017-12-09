@@ -7,7 +7,7 @@ class TypeDetector(object):
 		pass
 
 
-	def detect(self, text, collection):
+	def detect(self, text):
 		list_types = []
 		standard_types = []
 		# get all types in collection
