@@ -28,7 +28,7 @@ class Messenger {
 	}
 	
 	recieve(text = '') {
-		text = this.filter(text);
+		//text = this.filter(text);
 		
 		if (this.validate(text)) {
 			let message = {
@@ -80,16 +80,16 @@ class BuildHTML {
 						${who === "me" ? `<img src="${userIcon}" />`
 						 : `<img src="${robotIcon}" />`}
 					</div>
-					<div class="${this.textWrapper}">...</div>
+					<div class="${this.textWrapper}">${text}</div>
 				</div>`;
 	}
 	
 	me(text) {
-		return this._build(text, 'me');
+		return this._build(text.replace('\n', '<br />'), 'me');
 	}
 	
 	them(text) {
-		return this._build(text, 'them');
+		return this._build(text.replace('\n', '<br />'), 'them');
 	}
 }
 
@@ -105,7 +105,7 @@ $(document).ready(function() {
 	let player = null;
 
 	function safeText(text) {
-		$content.find('.message-wrapper').last().find('.text-wrapper').text(text);
+		//$content.find('.message-wrapper').last().find('.text-wrapper').text(text);
 	}
 	
 	function animateText() {
@@ -115,8 +115,10 @@ $(document).ready(function() {
 	}
 	
 	function scrollBottom() {
+		// console.log($($content).height());
 		$($inner).animate({
-			scrollTop: $($content).offset().top + $($content).outerHeight(true)
+			// scrollTop: $($content).offset().top + $($content).outerHeight(true)
+			scrollTop: $($content).height()
 		}, {
 			queue: false,
 			duration: 'ease'
@@ -154,7 +156,7 @@ $(document).ready(function() {
 			success: function(response) {
 				res = JSON.parse(response);
 				setTimeout(() => {
-					messenger.recieve(res["text"]);
+					messenger.recieve(res["text"].replace(/\n/g, '<br>'));
 				}, 200)
 				if (res["link"] !== '') {
 					setTimeout(() => {
